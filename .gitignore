@@ -3,9 +3,9 @@
 /test/
 custom-elements.json
 # top level source
-my-element.js
-my-element.js.map
-my-element.d.ts
-my-element.d.ts.map
+duckdb-grid-table-select.js
+duckdb-grid-table-select.js.map
+duckdb-grid-table-select.d.ts
+duckdb-grid-table-select.d.ts.map
 # only generated for size check
-my-element.bundled.js
+duckdb-grid-table-select.bundled.js

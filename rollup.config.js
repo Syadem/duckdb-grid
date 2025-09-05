@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import summary from 'rollup-plugin-summary';
-import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import terser from '@rollup/plugin-terser';
+import summary from 'rollup-plugin-summary';
 
 export default {
-  input: 'my-element.js',
+  input: 'duckdb-grid-table-select.js',
   output: {
-    file: 'my-element.bundled.js',
+    file: 'duckdb-grid-table-select.bundled.js',
     format: 'esm',
   },
   onwarn(warning) {
