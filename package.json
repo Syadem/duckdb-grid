@@ -7,12 +7,6 @@
   "module": "duckdb-grid-table-select.js",
   "types": "duckdb-grid-table-select.d.ts",
   "type": "module",
-  "files": [
-    "duckdb-grid-table-select.js",
-    "duckdb-grid-table-select.js.map",
-    "duckdb-grid-table-select.d.ts",
-    "duckdb-grid-table-select.d.ts.map"
-  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
