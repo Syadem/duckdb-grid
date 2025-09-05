@@ -11,15 +11,15 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf duckdb-grid-table-select.{d.ts,d.ts.map,js,js.map} test/duckdb-grid-table-select.{d.ts,d.ts.map,js,js.map} test/duckdb-grid-table-select_test.{d.ts,d.ts.map,js,js.map}",
-    "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
+    "lint": "pnpm run lint:lit-analyzer && pnpm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:lit-analyzer": "lit-analyzer",
     "format": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path ./.eslintignore --write",
     "analyze": "cem analyze --litelement --globs \"src/**/*.ts\"",
     "analyze:watch": "cem analyze --litelement --globs \"src/**/*.ts\" --watch",
     "serve": "wds --watch",
-    "serve:prod": "MODE=prod npm run serve",
-    "test": "npm run test:dev && npm run test:prod",
+    "serve:prod": "MODE=prod pnpm run serve",
+    "test": "pnpm run test:dev && pnpm run test:prod",
     "test:dev": "wtr",
     "test:watch": "wtr --watch",
     "test:prod": "MODE=prod wtr",
@@ -58,5 +58,6 @@
     "rollup-plugin-summary": "^2.0.1",
     "typescript": "~5.9.0"
   },
-  "customElements": "custom-elements.json"
+  "customElements": "custom-elements.json",
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
 }
