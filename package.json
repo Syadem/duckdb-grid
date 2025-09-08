@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "clean": "rimraf duckdb-grid-table-select.{d.ts,d.ts.map,js,js.map} test/duckdb-grid-table-select.{d.ts,d.ts.map,js,js.map} test/duckdb-grid-table-select_test.{d.ts,d.ts.map,js,js.map}",
+    "clean": "rimraf dist",
     "lint": "pnpm run lint:lit-analyzer && pnpm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:lit-analyzer": "lit-analyzer",
@@ -23,8 +23,7 @@
     "test:dev": "wtr",
     "test:watch": "wtr --watch",
     "test:prod": "MODE=prod wtr",
-    "test:prod:watch": "MODE=prod wtr --watch",
-    "checksize": "rollup -c ; cat duckdb-grid-table-select.bundled.js | gzip -9 | wc -c ; rm duckdb-grid-table-select.bundled.js"
+    "test:prod:watch": "MODE=prod wtr --watch"
   },
   "keywords": [
     "web-components",
@@ -41,9 +40,6 @@
     "@custom-elements-manifest/analyzer": "^0.6.3",
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
     "@open-wc/testing": "^4.0.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.7",
-    "@rollup/plugin-terser": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "@web/dev-server": "^0.1.31",
@@ -56,8 +52,6 @@
     "lit-analyzer": "^1.2.1",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
-    "rollup": "^4.18.0",
-    "rollup-plugin-summary": "^2.0.1",
     "typescript": "~5.9.0"
   },
   "customElements": "custom-elements.json",
