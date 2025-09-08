@@ -6,7 +6,6 @@ import {customElement, property, state} from 'lit/decorators.js';
  * A web component for selecting tables from a DuckDB database.
  *
  * @fires table-selected - Indicates when a table is selected
- * @slot - This element has a slot
  * @csspart select - The select element
  */
 @customElement('duckdb-grid-table-select')
@@ -16,16 +15,6 @@ export class DuckDbGridTableSelect extends LitElement {
       display: block;
       border: solid 1px gray;
       padding: 16px;
-    }
-
-    .table-select-container {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
     }
 
     select {
@@ -127,36 +116,31 @@ export class DuckDbGridTableSelect extends LitElement {
 
   override render() {
     return html`
-      <div class="table-select-container">
-        <label for="table-select">Select Table:</label>
-
-        ${this.loading
-          ? html`<div class="loading">Loading tables...</div>`
-          : this.error
-          ? html`<div class="error">${this.error}</div>`
-          : this.tables.length === 0
-          ? html`<div class="no-tables">No tables found in database</div>`
-          : html`
-              <select
-                id="table-select"
-                part="select"
-                .value=${this.selectedTable}
-                @change=${this._onTableChange}
-              >
-                ${this.tables.map(
-                  (table) => html`
-                    <option
-                      value=${table}
-                      ?selected=${table === this.selectedTable}
-                    >
-                      ${table}
-                    </option>
-                  `
-                )}
-              </select>
-            `}
-      </div>
-      <slot></slot>
+      ${this.loading
+        ? html`<div class="loading">Loading tables...</div>`
+        : this.error
+        ? html`<div class="error">${this.error}</div>`
+        : this.tables.length === 0
+        ? html`<div class="no-tables">No tables found in database</div>`
+        : html`
+            <select
+              id="table-select"
+              part="select"
+              .value=${this.selectedTable}
+              @change=${this._onTableChange}
+            >
+              ${this.tables.map(
+                (table) => html`
+                  <option
+                    value=${table}
+                    ?selected=${table === this.selectedTable}
+                  >
+                    ${table}
+                  </option>
+                `
+              )}
+            </select>
+          `}
     `;
   }
 }

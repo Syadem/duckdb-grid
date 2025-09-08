@@ -151,11 +151,6 @@ export class DuckDbGridTableSchema extends LitElement {
   override render() {
     return html`
       <div class="schema-container">
-        ${this.tableName
-          ? html`<div class="table-title">
-              Schema for table: ${this.tableName}
-            </div>`
-          : ''}
         ${this.loading
           ? html`<div class="loading">Loading schema...</div>`
           : this.error
