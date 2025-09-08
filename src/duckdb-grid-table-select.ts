@@ -1,9 +1,3 @@
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 import {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
@@ -97,16 +91,8 @@ export class DuckDbGridTableSelect extends LitElement {
 
     try {
       const result = await this.connection.query('SHOW TABLES');
-      const tableNames: string[] = [];
 
-      for (let i = 0; i < result.numRows; i++) {
-        const tableName = result.getChild('name')?.get(i);
-        if (tableName) {
-          tableNames.push(tableName.toString());
-        }
-      }
-
-      this.tables = tableNames;
+      this.tables = result.toArray().map((row) => row.name as string);
 
       // Auto-select first table if none selected
       if (this.tables.length > 0 && !this.selectedTable) {

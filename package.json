@@ -3,9 +3,9 @@
   "private": true,
   "version": "2.0.2",
   "description": "A web component to display duckdb data in a grid",
-  "main": "duckdb-grid-table-select.js",
-  "module": "duckdb-grid-table-select.js",
-  "types": "duckdb-grid-table-select.d.ts",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
   "type": "module",
   "scripts": {
     "build": "tsc",
