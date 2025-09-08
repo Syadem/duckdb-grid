@@ -2,10 +2,4 @@
 /lib/
 /test/
 custom-elements.json
-# top level source
-duckdb-grid-table-select.js
-duckdb-grid-table-select.js.map
-duckdb-grid-table-select.d.ts
-duckdb-grid-table-select.d.ts.map
-# only generated for size check
-duckdb-grid-table-select.bundled.js
+dist/
