@@ -18,12 +18,7 @@
     "analyze": "cem analyze --litelement --globs \"src/**/*.ts\"",
     "analyze:watch": "cem analyze --litelement --globs \"src/**/*.ts\" --watch",
     "serve": "wds --watch",
-    "serve:prod": "MODE=prod pnpm run serve",
-    "test": "pnpm run test:dev && pnpm run test:prod",
-    "test:dev": "wtr",
-    "test:watch": "wtr --watch",
-    "test:prod": "MODE=prod wtr",
-    "test:prod:watch": "MODE=prod wtr --watch"
+    "serve:prod": "MODE=prod pnpm run serve"
   },
   "keywords": [
     "web-components",
@@ -39,13 +34,10 @@
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.3",
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
-    "@open-wc/testing": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "@web/dev-server": "^0.1.31",
     "@web/dev-server-legacy": "^1.0.0",
-    "@web/test-runner": "^0.15.0",
-    "@web/test-runner-playwright": "^0.9.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "apache-arrow": "^17.0.0",
     "eslint": "^8.15.0",
