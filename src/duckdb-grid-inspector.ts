@@ -46,16 +46,62 @@ export class DuckDbGridInspector extends LitElement {
       margin: 0;
     }
 
-    .table-select-section {
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .table-select-container {
+      flex: 1;
       background: white;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    .table-schema-section {
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      padding: 4px;
+    }
+
+    .view-toggle-button {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      color: #666;
+    }
+
+    .view-toggle-button:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .view-toggle-button.active {
+      background: white;
+      color: #333;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-area {
       background: white;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      min-height: 200px;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: #666;
+      font-style: italic;
     }
 
     duckdb-grid-table-select {
@@ -77,21 +123,6 @@ export class DuckDbGridInspector extends LitElement {
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-
-    @media (min-width: 768px) {
-      .inspector-container {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-
-      .table-select-section {
-        flex: 0 0 300px;
-      }
-
-      .table-schema-section {
-        flex: 1;
-      }
-    }
   `;
 
   @property({type: Object})
@@ -99,6 +130,9 @@ export class DuckDbGridInspector extends LitElement {
 
   @state()
   private selectedTableName = '';
+
+  @state()
+  private selectedView: 'data' | 'schema' = 'schema';
 
   override render() {
     if (!this.connection) {
@@ -120,6 +154,7 @@ export class DuckDbGridInspector extends LitElement {
 
     return html`
       <div class="inspector-container" part="container">
+        <!-- Row 1: Header -->
         <div class="inspector-header">
           <h2 class="inspector-title">Database Inspector</h2>
           <p class="inspector-description">
@@ -127,22 +162,49 @@ export class DuckDbGridInspector extends LitElement {
           </p>
         </div>
 
-        <div class="table-select-section">
-          <duckdb-grid-table-select
-            part="table-select"
-            .connection=${this.connection}
-            @table-selected=${(e: CustomEvent) => {
-              this.selectedTableName = e.detail.tableName;
-            }}
-          ></duckdb-grid-table-select>
+        <!-- Row 2: Controls (Table Select + View Toggle Pills) -->
+        <div class="controls-row">
+          <div class="table-select-container">
+            <duckdb-grid-table-select
+              part="table-select"
+              .connection=${this.connection}
+              @table-selected=${(e: CustomEvent) => {
+                this.selectedTableName = e.detail.tableName;
+              }}
+            ></duckdb-grid-table-select>
+          </div>
+
+          <div class="view-toggle">
+            <button
+              class="view-toggle-button ${this.selectedView === 'data'
+                ? 'active'
+                : ''}"
+              @click=${() => (this.selectedView = 'data')}
+            >
+              Data
+            </button>
+            <button
+              class="view-toggle-button ${this.selectedView === 'schema'
+                ? 'active'
+                : ''}"
+              @click=${() => (this.selectedView = 'schema')}
+            >
+              Schema
+            </button>
+          </div>
         </div>
 
-        <div class="table-schema-section">
-          <duckdb-grid-table-schema
-            part="table-schema"
-            .connection=${this.connection}
-            .tableName=${this.selectedTableName}
-          ></duckdb-grid-table-schema>
+        <!-- Row 3: Content Area -->
+        <div class="content-area">
+          ${this.selectedView === 'data'
+            ? html`<div class="empty-state">Data view coming soon...</div>`
+            : html`
+                <duckdb-grid-table-schema
+                  part="table-schema"
+                  .connection=${this.connection}
+                  .tableName=${this.selectedTableName}
+                ></duckdb-grid-table-schema>
+              `}
         </div>
       </div>
     `;
