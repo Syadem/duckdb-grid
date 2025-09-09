@@ -3,6 +3,7 @@ import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import './duckdb-grid-table-select.js';
 import './duckdb-grid-table-schema.js';
+import './duckdb-grid-table-data.js';
 
 /**
  * A web component that combines table selection and schema inspection for DuckDB databases.
@@ -97,19 +98,17 @@ export class DuckDbGridInspector extends LitElement {
       min-height: 200px;
     }
 
-    .empty-state {
-      padding: 40px 20px;
-      text-align: center;
-      color: #666;
-      font-style: italic;
-    }
-
     duckdb-grid-table-select {
       border: none;
       padding: 0;
     }
 
     duckdb-grid-table-schema {
+      border: none;
+      padding: 0;
+    }
+
+    duckdb-grid-table-data {
       border: none;
       padding: 0;
     }
@@ -132,7 +131,7 @@ export class DuckDbGridInspector extends LitElement {
   private selectedTableName = '';
 
   @state()
-  private selectedView: 'data' | 'schema' = 'schema';
+  private selectedView: 'data' | 'schema' = 'data';
 
   override render() {
     if (!this.connection) {
@@ -197,7 +196,13 @@ export class DuckDbGridInspector extends LitElement {
         <!-- Row 3: Content Area -->
         <div class="content-area">
           ${this.selectedView === 'data'
-            ? html`<div class="empty-state">Data view coming soon...</div>`
+            ? html`
+                <duckdb-grid-table-data
+                  part="table-data"
+                  .connection=${this.connection}
+                  .tableName=${this.selectedTableName}
+                ></duckdb-grid-table-data>
+              `
             : html`
                 <duckdb-grid-table-schema
                   part="table-schema"
