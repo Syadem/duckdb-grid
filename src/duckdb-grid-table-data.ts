@@ -1,34 +1,7 @@
-import {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
-import {DataType, Table} from 'apache-arrow';
+import {Table} from 'apache-arrow';
 import {css, html, LitElement} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
-
-export function mapArrowTableToJsRows(table: Table): Record<string, unknown>[] {
-  return table.toArray().map((row, index) => {
-    const convertedRow: Record<string, unknown> = {};
-    for (const [k, v] of row) {
-      if (typeof v === 'bigint') {
-        convertedRow[k] = Number(v);
-        continue;
-      }
-
-      const field = table.schema.fields.find((field) => field.name === k);
-      if (DataType.isDate(field?.type) || DataType.isTimestamp(field?.type)) {
-        convertedRow[k] = typeof v === 'number' ? new Date(v) : undefined;
-        continue;
-      }
-
-      convertedRow[k] = v;
-    }
-
-    // Hack so that rows always have an id
-    if (!('id' in convertedRow)) {
-      convertedRow['id'] = index;
-    }
-
-    return convertedRow;
-  });
-}
+import {customElement, property} from 'lit/decorators.js';
+import {mapArrowTableToJsRows} from './mapArrowTableToJsRows';
 
 /**
  * A web component for displaying table data from a DuckDB database.
@@ -94,26 +67,6 @@ export class DuckDbGridTableData extends LitElement {
       background-color: #f0f0f0;
     }
 
-    .loading {
-      color: #666;
-      font-style: italic;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .error {
-      color: #d32f2f;
-      font-weight: bold;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .no-table {
-      color: #666;
-      padding: 20px;
-      text-align: center;
-    }
-
     .no-data {
       color: #666;
       padding: 20px;
@@ -141,78 +94,8 @@ export class DuckDbGridTableData extends LitElement {
     }
   `;
 
-  @property({type: String})
-  tableName!: string;
-
   @property({type: Object})
-  connection!: AsyncDuckDBConnection;
-
-  @state()
-  private data: Record<string, unknown>[] = [];
-
-  @state()
-  private columns: string[] = [];
-
-  @state()
-  private loading = false;
-
-  @state()
-  private error = '';
-
-  override async connectedCallback() {
-    super.connectedCallback();
-    if (this.connection && this.tableName) {
-      await this.fetchData();
-    }
-  }
-
-  override willUpdate(changedProperties: Map<string, unknown>) {
-    super.willUpdate(changedProperties);
-    if (
-      (changedProperties.has('connection') ||
-        changedProperties.has('tableName')) &&
-      this.connection &&
-      this.tableName
-    ) {
-      this.fetchData();
-    }
-  }
-
-  private async fetchData() {
-    if (!this.connection) {
-      this.error = 'No database connection available';
-      return;
-    }
-
-    if (!this.tableName) {
-      this.error = 'No table name provided';
-      return;
-    }
-
-    this.loading = true;
-    this.error = '';
-
-    try {
-      const result = await this.connection.query(
-        `SELECT * FROM ${this.tableName}`
-      );
-
-      // Convert the arrow table to JS rows using the provided function
-      const jsRows = mapArrowTableToJsRows(result);
-      this.data = jsRows;
-
-      // Extract column names from the arrow table schema
-      this.columns = result.schema.fields.map((field) => field.name);
-    } catch (err) {
-      this.error = `Failed to fetch data for table "${this.tableName}": ${
-        err instanceof Error ? err.message : 'Unknown error'
-      }`;
-      this.data = [];
-      this.columns = [];
-    } finally {
-      this.loading = false;
-    }
-  }
+  table: Table | null = null;
 
   private formatCellValue(value: unknown): string {
     if (value === null || value === undefined) {
@@ -249,47 +132,46 @@ export class DuckDbGridTableData extends LitElement {
   override render() {
     return html`
       <div class="data-container">
-        ${this.loading
-          ? html`<div class="loading">Loading table data...</div>`
-          : this.error
-          ? html`<div class="error">${this.error}</div>`
-          : !this.tableName
-          ? html`<div class="no-table">No table name provided</div>`
-          : this.data.length === 0
-          ? html`<div class="no-data">No data found in table</div>`
-          : html`
-              <div class="row-count">
-                Showing ${this.data.length}
-                row${this.data.length === 1 ? '' : 's'}
-              </div>
-              <table part="table">
-                <thead>
-                  <tr>
-                    ${this.columns.map(
-                      (column) => html`<th title="${column}">${column}</th>`
+        ${!this.table
+          ? html`<div class="no-data">No table data available</div>`
+          : (() => {
+              const jsRows = mapArrowTableToJsRows(this.table);
+              const columns = this.table.schema.fields.map(
+                (field) => field.name
+              );
+              return html`
+                <div class="row-count">
+                  Showing ${jsRows.length} row${jsRows.length === 1 ? '' : 's'}
+                </div>
+                <table part="table">
+                  <thead>
+                    <tr>
+                      ${columns.map(
+                        (column) => html`<th title="${column}">${column}</th>`
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${jsRows.map(
+                      (row) => html`
+                        <tr>
+                          ${columns.map(
+                            (column) => html`
+                              <td
+                                class="${this.getCellClass(row[column])}"
+                                title="${this.formatCellValue(row[column])}"
+                              >
+                                ${this.formatCellValue(row[column])}
+                              </td>
+                            `
+                          )}
+                        </tr>
+                      `
                     )}
-                  </tr>
-                </thead>
-                <tbody>
-                  ${this.data.map(
-                    (row) => html`
-                      <tr>
-                        ${this.columns.map(
-                          (column) => html`
-                            <td
-                              class="${this.getCellClass(row[column])}"
-                              title="${this.formatCellValue(row[column])}"
-                            >
-                              ${this.formatCellValue(row[column])}
-                            </td>
-                          `
-                        )}
-                      </tr>
-                    `
-                  )}
-                </tbody>
-              </table>
-            `}
+                  </tbody>
+                </table>
+              `;
+            })()}
       </div>
       <slot></slot>
     `;

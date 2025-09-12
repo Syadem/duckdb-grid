@@ -1,4 +1,5 @@
 import {AsyncDuckDBConnection} from '@duckdb/duckdb-wasm';
+import {Table} from 'apache-arrow';
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import './duckdb-grid-table-select.js';
@@ -122,6 +123,27 @@ export class DuckDbGridInspector extends LitElement {
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
+
+    .loading {
+      color: #666;
+      font-style: italic;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .error {
+      color: #d32f2f;
+      font-weight: bold;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .no-data {
+      color: #666;
+      padding: 20px;
+      text-align: center;
+      font-style: italic;
+    }
   `;
 
   @property({type: Object})
@@ -132,6 +154,34 @@ export class DuckDbGridInspector extends LitElement {
 
   @state()
   private selectedView: 'data' | 'schema' = 'data';
+
+  @state()
+  private tableState:
+    | {status: 'idle'}
+    | {status: 'loading'}
+    | {status: 'loaded'; table: Table}
+    | {status: 'error'; error: string} = {status: 'idle'};
+
+  private async fetchTableData() {
+    if (!this.connection || !this.selectedTableName) {
+      this.tableState = {status: 'idle'};
+      return;
+    }
+
+    this.tableState = {status: 'loading'};
+
+    try {
+      const result = await this.connection.query(
+        `SELECT * FROM ${this.selectedTableName}`
+      );
+      this.tableState = {status: 'loaded', table: result};
+    } catch (err) {
+      this.tableState = {
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Unknown error',
+      };
+    }
+  }
 
   override render() {
     if (!this.connection) {
@@ -169,6 +219,7 @@ export class DuckDbGridInspector extends LitElement {
               .connection=${this.connection}
               @table-selected=${(e: CustomEvent) => {
                 this.selectedTableName = e.detail.tableName;
+                this.fetchTableData();
               }}
             ></duckdb-grid-table-select>
           </div>
@@ -196,13 +247,18 @@ export class DuckDbGridInspector extends LitElement {
         <!-- Row 3: Content Area -->
         <div class="content-area">
           ${this.selectedView === 'data'
-            ? html`
-                <duckdb-grid-table-data
-                  part="table-data"
-                  .connection=${this.connection}
-                  .tableName=${this.selectedTableName}
-                ></duckdb-grid-table-data>
-              `
+            ? this.tableState.status === 'loading'
+              ? html`<div class="loading">Loading table data...</div>`
+              : this.tableState.status === 'error'
+              ? html`<div class="error">${this.tableState.error}</div>`
+              : this.tableState.status === 'loaded'
+              ? html`
+                  <duckdb-grid-table-data
+                    part="table-data"
+                    .table=${this.tableState.table}
+                  ></duckdb-grid-table-data>
+                `
+              : html`<div class="no-data">Select a table to view data</div>`
             : html`
                 <duckdb-grid-table-schema
                   part="table-schema"
