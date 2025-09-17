@@ -1,4 +1,4 @@
-import {Table, DataType} from 'apache-arrow';
+import {DataType, Table} from 'apache-arrow';
 
 export function mapArrowTableToJsRows(table: Table): Record<string, unknown>[] {
   return table.toArray().map((row, index) => {
@@ -10,8 +10,15 @@ export function mapArrowTableToJsRows(table: Table): Record<string, unknown>[] {
       }
 
       const field = table.schema.fields.find((field) => field.name === k);
-      if (DataType.isDate(field?.type) || DataType.isTimestamp(field?.type)) {
-        convertedRow[k] = typeof v === 'number' ? new Date(v) : undefined;
+      if (DataType.isDate(field?.type)) {
+        convertedRow[k] =
+          typeof v === 'number'
+            ? new Date(v).toISOString().split('T')[0]
+            : undefined;
+        continue;
+      } else if (DataType.isTimestamp(field?.type)) {
+        convertedRow[k] =
+          typeof v === 'number' ? new Date(v).toISOString() : undefined;
         continue;
       }
 
