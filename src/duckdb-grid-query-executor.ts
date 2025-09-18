@@ -42,7 +42,6 @@ export class DuckDbGridQueryExecutor extends LitElement {
     }
 
     textarea {
-      width: 100%;
       min-height: 100px;
       padding: 12px;
       border: 1px solid #ccc;
