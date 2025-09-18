@@ -10,14 +10,14 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rimraf dist",
-    "lint": "pnpm run lint:lit-analyzer && pnpm run lint:eslint",
+    "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:lit-analyzer": "lit-analyzer",
     "format": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path ./.eslintignore --write",
     "analyze": "cem analyze --litelement --globs \"src/**/*.ts\"",
     "analyze:watch": "cem analyze --litelement --globs \"src/**/*.ts\" --watch",
     "serve": "wds --watch",
-    "serve:prod": "MODE=prod pnpm run serve"
+    "serve:prod": "MODE=prod npm run serve"
   },
   "keywords": [
     "web-components",
@@ -51,6 +51,5 @@
     "README.md",
     "LICENSE"
   ],
-  "customElements": "custom-elements.json",
-  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
+  "customElements": "custom-elements.json"
 }
