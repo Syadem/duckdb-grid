@@ -1,6 +1,6 @@
 {
   "name": "@syadem/duckdb-grid",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A web component to display duckdb data in a grid",
   "main": "dist/index.js",
   "module": "dist/index.js",
