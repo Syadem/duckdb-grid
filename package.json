@@ -27,6 +27,10 @@
   ],
   "author": "Google LLC",
   "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Syadem/duckdb-grid.git"
+  },
   "dependencies": {
     "lit": "^3.2.0"
   },
