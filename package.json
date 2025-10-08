@@ -31,7 +31,7 @@
     "type": "git",
     "url": "https://github.com/Syadem/duckdb-grid.git"
   },
-  "dependencies": {
+  "peerDependencies": {
     "lit": "^3.2.0"
   },
   "devDependencies": {
@@ -44,6 +44,7 @@
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "apache-arrow": "^17.0.0",
     "eslint": "^8.15.0",
+    "lit": "^3.2.0",
     "lit-analyzer": "^1.2.1",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
