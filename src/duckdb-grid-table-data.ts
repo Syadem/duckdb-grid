@@ -97,6 +97,9 @@ export class DuckDbGridTableData extends LitElement {
   @property({type: Object})
   table: Table | null = null;
 
+  @property({type: Number})
+  totalRowCount: number | null = null;
+
   private formatCellValue(value: unknown): string {
     if (value === null || value === undefined) {
       return 'NULL';
@@ -139,9 +142,17 @@ export class DuckDbGridTableData extends LitElement {
               const columns = this.table.schema.fields.map(
                 (field) => field.name
               );
+              const displayedRows = jsRows.length;
+              const totalRows = this.totalRowCount ?? displayedRows;
+              const isTruncated = displayedRows < totalRows;
+
               return html`
                 <div class="row-count">
-                  Showing ${jsRows.length} row${jsRows.length === 1 ? '' : 's'}
+                  ${isTruncated
+                    ? `Showing ${displayedRows} rows out of ${totalRows}`
+                    : `Showing ${displayedRows} row${
+                        displayedRows === 1 ? '' : 's'
+                      }`}
                 </div>
                 <table part="table">
                   <thead>

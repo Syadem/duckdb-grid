@@ -149,6 +149,9 @@ export class DuckDbGridInspector extends LitElement {
   @property({type: Object})
   connection!: AsyncDuckDBConnection;
 
+  @property({type: Number})
+  maxRowCount = 10000;
+
   @state()
   private selectedTableName = '';
 
@@ -159,7 +162,7 @@ export class DuckDbGridInspector extends LitElement {
   private tableState:
     | {status: 'idle'}
     | {status: 'loading'}
-    | {status: 'loaded'; table: Table}
+    | {status: 'loaded'; table: Table; totalRowCount: number}
     | {status: 'error'; error: string} = {status: 'idle'};
 
   private async fetchTableData() {
@@ -171,10 +174,18 @@ export class DuckDbGridInspector extends LitElement {
     this.tableState = {status: 'loading'};
 
     try {
-      const result = await this.connection.query(
-        `SELECT * FROM ${this.selectedTableName}`
+      // Get total row count
+      const countResult = await this.connection.query(
+        `SELECT COUNT(*) as count FROM ${this.selectedTableName}`
       );
-      this.tableState = {status: 'loaded', table: result};
+      const totalRowCount = Number(countResult.toArray()[0].count);
+
+      // Get limited data
+      const result = await this.connection.query(
+        `SELECT * FROM ${this.selectedTableName} LIMIT ${this.maxRowCount}`
+      );
+
+      this.tableState = {status: 'loaded', table: result, totalRowCount};
     } catch (err) {
       this.tableState = {
         status: 'error',
@@ -256,6 +267,7 @@ export class DuckDbGridInspector extends LitElement {
                   <duckdb-grid-table-data
                     part="table-data"
                     .table=${this.tableState.table}
+                    .totalRowCount=${this.tableState.totalRowCount}
                   ></duckdb-grid-table-data>
                 `
               : html`<div class="no-data">Select a table to view data</div>`
