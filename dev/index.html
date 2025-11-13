@@ -3,20 +3,201 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>&lt;duckdb-grid-table-select> Demo</title>
+    <title>&lt;duckdb-grid-inspector> Demo</title>
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/lit/polyfill-support.js"></script>
-    <script type="module" src="../duckdb-grid-table-select.js"></script>
+    <script type="module" src="../dist/duckdb-grid-inspector.js"></script>
     <style>
-      p {
-        border: solid 1px blue;
-        padding: 8px;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .status.loading {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+      }
+
+      .status.ready {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #28a745;
+      }
+
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #dc3545;
+      }
+
+      duckdb-grid-inspector {
+        margin-top: 20px;
       }
     </style>
   </head>
   <body>
-    <duckdb-grid-table-select>
-      <p>This is child content</p>
-    </duckdb-grid-table-select>
+    <h1>DuckDB Grid Inspector Demo</h1>
+    <div id="status" class="status loading">Initializing DuckDB...</div>
+    <div id="inspector-container"></div>
+
+    <script>
+      const getDb = async () => {
+        const duckdb = window.duckdbWasm;
+        // @ts-ignore
+        if (window._db) return window._db;
+        const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+
+        // Select a bundle based on browser checks
+        const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+
+        const worker_url = URL.createObjectURL(
+          new Blob([`importScripts("${bundle.mainWorker}");`], {
+            type: "text/javascript",
+          })
+        );
+
+        // Instantiate the asynchronous version of DuckDB-wasm
+        const worker = new Worker(worker_url);
+        const logger = new duckdb.ConsoleLogger();
+        const db = new duckdb.AsyncDuckDB(logger, worker);
+        await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+        URL.revokeObjectURL(worker_url);
+        window._db = db;
+        return db;
+      };
+
+      const createTestData = async (conn) => {
+        // Create employees table
+        await conn.query(`
+          CREATE TABLE employees (
+            id INTEGER,
+            name VARCHAR,
+            department VARCHAR,
+            salary DECIMAL(10, 2),
+            hire_date DATE,
+            is_active BOOLEAN
+          )
+        `);
+
+        // Insert sample data
+        await conn.query(`
+          INSERT INTO employees VALUES
+            (1, 'Alice Johnson', 'Engineering', 95000.00, '2020-01-15', true),
+            (2, 'Bob Smith', 'Engineering', 87000.00, '2019-03-22', true),
+            (3, 'Carol Williams', 'Marketing', 72000.00, '2021-06-10', true),
+            (4, 'David Brown', 'Sales', 68000.00, '2020-09-05', true),
+            (5, 'Eve Davis', 'Engineering', 105000.00, '2018-11-30', true),
+            (6, 'Frank Miller', 'HR', 62000.00, '2021-02-14', true),
+            (7, 'Grace Wilson', 'Engineering', 92000.00, '2019-07-18', true),
+            (8, 'Henry Moore', 'Marketing', 78000.00, '2020-04-25', true),
+            (9, 'Iris Taylor', 'Sales', 71000.00, '2021-01-08', true),
+            (10, 'Jack Anderson', 'Engineering', 98000.00, '2019-05-12', true),
+            (11, 'Kate Thomas', 'Finance', 85000.00, '2020-08-20', true),
+            (12, 'Leo Jackson', 'Engineering', 89000.00, '2021-03-15', false),
+            (13, 'Mary White', 'Marketing', 75000.00, '2020-11-02', true),
+            (14, 'Nathan Harris', 'Sales', 69000.00, '2021-07-22', true),
+            (15, 'Olivia Martin', 'Engineering', 102000.00, '2018-09-10', true)
+        `);
+
+        // Create products table
+        await conn.query(`
+          CREATE TABLE products (
+            product_id INTEGER,
+            product_name VARCHAR,
+            category VARCHAR,
+            price DECIMAL(10, 2),
+            stock_quantity INTEGER,
+            last_updated TIMESTAMP
+          )
+        `);
+
+        await conn.query(`
+          INSERT INTO products VALUES
+            (101, 'Laptop Pro 15', 'Electronics', 1299.99, 45, '2024-11-01 10:30:00'),
+            (102, 'Wireless Mouse', 'Accessories', 29.99, 150, '2024-11-05 14:20:00'),
+            (103, 'USB-C Cable', 'Accessories', 12.99, 200, '2024-11-03 09:15:00'),
+            (104, 'Monitor 27inch', 'Electronics', 399.99, 30, '2024-11-02 16:45:00'),
+            (105, 'Keyboard Mechanical', 'Accessories', 89.99, 75, '2024-11-04 11:00:00'),
+            (106, 'Webcam HD', 'Electronics', 79.99, 60, '2024-11-06 13:30:00'),
+            (107, 'Desk Lamp LED', 'Office', 34.99, 100, '2024-11-01 08:00:00'),
+            (108, 'Office Chair', 'Furniture', 249.99, 25, '2024-11-03 15:20:00'),
+            (109, 'Notebook Set', 'Stationery', 15.99, 180, '2024-11-05 10:45:00'),
+            (110, 'Pen Pack', 'Stationery', 8.99, 250, '2024-11-02 12:00:00')
+        `);
+
+        // Create sales table
+        await conn.query(`
+          CREATE TABLE sales (
+            sale_id INTEGER,
+            employee_id INTEGER,
+            product_id INTEGER,
+            quantity INTEGER,
+            sale_date DATE,
+            total_amount DECIMAL(10, 2)
+          )
+        `);
+
+        await conn.query(`
+          INSERT INTO sales VALUES
+            (1001, 4, 101, 2, '2024-11-01', 2599.98),
+            (1002, 9, 102, 5, '2024-11-02', 149.95),
+            (1003, 14, 104, 1, '2024-11-03', 399.99),
+            (1004, 4, 105, 3, '2024-11-04', 269.97),
+            (1005, 9, 103, 10, '2024-11-05', 129.90),
+            (1006, 14, 106, 2, '2024-11-06', 159.98),
+            (1007, 4, 107, 4, '2024-11-07', 139.96),
+            (1008, 9, 109, 8, '2024-11-08', 127.92),
+            (1009, 14, 110, 15, '2024-11-09', 134.85),
+            (1010, 4, 108, 1, '2024-11-10', 249.99)
+        `);
+      };
+    </script>
+
+    <script type="module">
+      import * as duckdbWasm from "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.1-dev132.0/+esm";
+      window.duckdbWasm = duckdbWasm;
+
+      const statusEl = document.getElementById('status');
+      const containerEl = document.getElementById('inspector-container');
+
+      try {
+        // Initialize DuckDB
+        const db = await getDb();
+        const conn = await db.connect();
+
+        statusEl.textContent = 'Creating test tables...';
+
+        // Create test data
+        await createTestData(conn);
+
+        statusEl.className = 'status ready';
+        statusEl.textContent = '✓ DuckDB initialized with test data (employees, products, sales tables)';
+
+        // Create and configure the inspector component
+        const inspector = document.createElement('duckdb-grid-inspector');
+        inspector.connection = conn;
+        inspector.maxRowCount = 10000;
+        containerEl.appendChild(inspector);
+
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '✗ Error: ' + error.message;
+        console.error('Initialization error:', error);
+      }
+    </script>
   </body>
 </html>
